@@ -1,12 +1,12 @@
 import React from 'react';
-import { FlatList, StyleSheet } from 'react-native';
+import { FlatList, StyleSheet, View, Text } from 'react-native';
 import { data } from '../db';
-import Service from './Service';
+import Service from '../Components/Service';
 
-const PasswordList = props => {
+const PasswordListScreen = props => {
     return (
-        <FlatList style={styles.container} data={data} renderItem={item=><Service service={item.service} />} />
-    )
+        <FlatList style={styles.container} keyExtractor={item => item.id.toString()} data={data} renderItem={item=>(<Service id={item.item.id} service={item.item.service} username={item.item.username} password={item.item.password} />)} />
+        )
 }
 
 const styles = StyleSheet.create({
@@ -15,4 +15,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default PasswordList;
+export default PasswordListScreen;
