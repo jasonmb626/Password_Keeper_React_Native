@@ -2,18 +2,12 @@ import React from 'react';
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 
-import HeaderRight from '../Components/HeaderRight';
-
-import PasswordListScreen from '../Screens/PasswordListScreen';
+import ServiceListScreen from '../Screens/ServiceListScreen';
+import AddEditServiceScreen from '../Screens/AddEditServiceScreen';
 
 const MainNavigator = createStackNavigator({
-  PasswordList: {
-    screen: PasswordListScreen,
-    navigationOptions: {
-      title: 'All Passwords',
-      headerRight: () => (<HeaderRight />)
-    }
-  }
+  ServiceList: ServiceListScreen,
+  AddEditService: AddEditServiceScreen
 });
     
 export default createAppContainer(MainNavigator);

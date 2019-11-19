@@ -1,79 +1,91 @@
-export const data = [
-    {
-        id: 1,
-        service: "Facebook",
-        username: "jasonmb626@gmail.com",
-        password: "123456",
-        notes: ""
-    },
-    {
-        id: 2,
-        service: "Hulu",
-        username: "jasonmb626@gmail.com",
-        password: "123456",
-        notes: ""
-    },
-    {
-        id: 3,
-        service: "Twitter",
-        username: "jasonmb626@gmail.com",
-        password: "123456",
-        notes: ""
-    },
-    {
-        id: 4,
-        service: "GitHub",
-        username: "jasonmb626",
-        password: "cB_ky3rAb",
-        notes: ""
-    },
-    {
-        id: 5,
-        service: "Netflix",
-        username: "jasonmb626@gmail.com",
-        password: "123456",
-        notes: ""
-    },
-    {
-        id: 6,
-        service: "Amazon",
-        username: "jasonmb626@gmail.com",
-        password: "123456",
-        notes: ""
-    },
-    {
-        id: 7,
-        service: "ComEd",
-        username: "jasonmb626@gmail.com",
-        password: "123456",
-        notes: ""
-    },
-    {
-        id: 8,
-        service: "Dayforce",
-        username: "jasonmb626@gmail.com",
-        password: "123456",
-        notes: ""
-    },
-    {
-        id: 9,
-        service: "Slack",
-        username: "jasonmb626@gmail.com",
-        password: "123456",
-        notes: ""
-    },
-    {
-        id: 10,
-        service: "Peoples Gas",
-        username: "jasonmb626@gmail.com",
-        password: "123456",
-        notes: ""
-    },
-    {
-        id: 11,
-        service: "Meetup",
-        username: "jason@jasonbrunelle.com",
-        password: "123456",
-        notes: ""
+import * as SQLite from 'expo-sqlite';
+import uuid from 'uuid';
+
+const db = SQLite.openDatabase('password_keeper.db');
+
+export const init = () => {
+    return new Promise((resolve, reject) => {
+        db.transaction(tx => {
+        tx.executeSql(`CREATE TABLE IF NOT EXISTS services (
+            id TEXT NOT NULL PRIMARY KEY,
+            user TEXT NOT NULL,
+            service TEXT NOT NULL,
+            username TEXT NOT NULL,
+            password TEXT NOT NULL,
+            notes TEXT
+        )`, [], (_, result) => resolve(result), (_, err) => reject(err));
+    });});
+}
+
+export const getServicesFromDB = () => {
+    return new Promise((resolve, reject) => {db.transaction(tx => {
+        tx.executeSql(`SELECT * FROM services`, [], (_, result) => {resolve(result.rows)}, (_, err) => {reject(err)});
+    });
+})}
+
+export const updateServiceToDB = serviceData => {
+    const promise = new Promise((resolve, reject) => {
+        db.transaction(tx => {
+            tx.executeSql(`UPDATE services 
+                SET service=?,
+                username=?,
+                password=?,
+                notes=?
+                WHERE id=?`, 
+                [serviceData.service, serviceData.username, serviceData.password, serviceData.notes, serviceData.id], 
+                (SQL, result) => {resolve(result);}, (_, err) => {reject(err);});});
+        });
     }
-];
+
+export const deleteServiceFromDB = serviceId => {
+    console.log(`Deleting ${serviceId}`)
+    const promise = new Promise((resolve, reject) => {
+        db.transaction(tx => {
+            tx.executeSql(`DELETE FROM services WHERE id=?`, [serviceId], (TX, result) => {resolve(result);}, (TX, err) => {reject(err);});});
+        });
+    }
+    
+
+export const addServiceToDB = serviceData => {
+    console.log(`Adding ${serviceData.service}`)
+    const promise = new Promise((resolve, reject) => {
+        db.transaction(tx => {
+            tx.executeSql(`INSERT INTO services (id, user, service, username, password, notes) 
+            VALUES (?, 'jason@jasonbrunelle.com', ?, ?, ?, ?) `, [serviceData.id, serviceData.service, serviceData.username, serviceData.password, serviceData.notes], (TX, result) => {console.log(TX); console.log(result); resolve(result);}, (TX, err) => {console.log(TX); console.error(err); reject(err);});});
+        });
+    }
+    
+export default (state = initialState, action) => {
+    switch (action.type) {
+        case GET_SERVICES:
+            return [...action.payload];
+        case ADD_UPDATE_SERVICE:
+            if (action.payload.id) {
+                return state.map(service => {
+                    if (service.id === action.payload.id)
+                        return {
+                            id: action.payload.id,
+                            service: action.payload.service,
+                            username: action.payload.username,
+                            password: action.payload.password,
+                            notes: action.payload.notes
+                        }
+                    else
+                        return service;
+                });
+            } else {
+                return [
+                    ...state,
+                    {
+                        id: uuid(),
+                        service: action.payload.service,
+                        username: action.payload.username,
+                        password: action.payload.password,
+                        notes: action.payload.notes
+                    }
+                ]
+            }
+        default: 
+            return state;
+    }
+}
