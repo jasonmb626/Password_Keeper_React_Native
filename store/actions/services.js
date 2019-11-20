@@ -12,15 +12,20 @@ export const ADD_SERVICE = "ADD_SERVICE";
 export const UPDATE_SERVICE = "UPDATE_SERVICE";
 export const GET_SERVICES = "GET_SERVICES";
 export const DELETE_SERVICE = "DELETE_SERVICE";
+export const CLEAR_SERVICES = "CLEAR_SERVICES";
+
 import { UPDATE_PASSWORD } from "../actions/auth";
+
+export const clearServices = () => {
+  return {
+    type: CLEAR_SERVICES
+  };
+};
 
 export const addUpdateService = (serviceData, password) => async dispatch => {
   let isNewEntry = false;
 
-  console.log("add/edit action: sevice data");
-  console.log(serviceData);
   if (!serviceData.id) {
-    console.log("add/edit action: assigning id");
     serviceData.id = uuid();
     isNewEntry = true;
   }
@@ -53,7 +58,6 @@ export const addUpdateService = (serviceData, password) => async dispatch => {
       console.error(err);
     }
   } else {
-    serviceData.id = uuid();
     try {
       await addServiceToDB(revisedService);
       dispatch({
@@ -81,52 +85,51 @@ export const deleteService = serviceId => async dispatch => {
 };
 
 export const getServices = (username, password) => async dispatch => {
+  console.log(`fetching for ${username} w/ password ${password}`);
   const cipherData = await getServicesForUserFromDB(username);
-  console.log(
-    `start list of cipher data for user ${username} with password ${password}`
-  );
-  console.log(cipherData);
-  console.log(`end list of cipher data for user ${username}`);
-
   let decrypted = [];
+  let error = false;
   if (password !== "") {
     decrypted = cipherData._array.map(entry => {
       let decrypt = { ...entry };
       let bytes;
-      console.log(`id ${decrypt.id}`);
-      bytes = CryptoJS.AES.decrypt(entry.service, password);
-      console.log(`service e ${entry.service}`);
-      console.log(`service d ${bytes.toString(CryptoJS.enc.Utf8)}`);
-      decrypt.service = bytes.toString(CryptoJS.enc.Utf8);
-      bytes = CryptoJS.AES.decrypt(entry.username, password);
-      console.log(`username e ${entry.username}`);
-      console.log(`username d ${bytes.toString(CryptoJS.enc.Utf8)}`);
-      decrypt.username = bytes.toString(CryptoJS.enc.Utf8);
-      bytes = CryptoJS.AES.decrypt(entry.password, password);
-      console.log(
-        `password ${entry.password} ${bytes.toString(CryptoJS.enc.Utf8)}`
-      );
-      decrypt.password = bytes.toString(CryptoJS.enc.Utf8);
-      bytes = CryptoJS.AES.decrypt(entry.notes, password);
-      console.log(`notes ${entry.notes} ${bytes.toString(CryptoJS.enc.Utf8)}`);
-      decrypt.notes = bytes.toString(CryptoJS.enc.Utf8);
+      try {
+        bytes = CryptoJS.AES.decrypt(entry.service, password);
+        decrypt.service = bytes.toString(CryptoJS.enc.Utf8);
+        bytes = CryptoJS.AES.decrypt(entry.username, password);
+        decrypt.username = bytes.toString(CryptoJS.enc.Utf8);
+        bytes = CryptoJS.AES.decrypt(entry.password, password);
+        decrypt.password = bytes.toString(CryptoJS.enc.Utf8);
+        bytes = CryptoJS.AES.decrypt(entry.notes, password);
+        decrypt.notes = bytes.toString(CryptoJS.enc.Utf8);
+      } catch (err) {
+        console.log("error, so returning original object");
+        error = true;
+        return entry;
+      }
       return decrypt;
     });
   } else {
     decrypted = cipherData._array;
   }
-  console.log(`start list of decrypted data for user ${username}`);
-  console.log(decrypted);
-  console.log(`end list of decrypted data for user ${username}`);
-  dispatch({
-    type: GET_SERVICES,
-    payload: decrypted
-  });
+  if (!error) {
+    dispatch({
+      type: GET_SERVICES,
+      payload: decrypted
+    });
+  } else {
+    dispatch({
+      type: GET_SERVICES,
+      payload: cipherData._array
+    });
+  }
 };
 
 export const changePassword = (services, newPassword) => dispatch => {
+  console.log("change password");
+  console.log(services);
   services.forEach(async service => {
-    const revisedService = service;
+    const revisedService = { ...service };
     if (newPassword) {
       revisedService.service = CryptoJS.AES.encrypt(
         service.service,

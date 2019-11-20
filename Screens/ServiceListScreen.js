@@ -8,7 +8,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useSelector, useDispatch } from "react-redux";
 import Service from "../Components/Service";
-import { getServices } from "../store/actions/services";
+import { getServices, clearServices } from "../store/actions/services";
 import { logout } from "../store/actions/auth";
 
 const PasswordListScreen = props => {
@@ -22,8 +22,6 @@ const PasswordListScreen = props => {
   useEffect(() => {
     dispatch(getServices(auth.username, auth.password));
   }, []);
-  console.log("ServiceListScreen: data");
-  console.log(data);
   return (
     <FlatList
       style={styles.container}
@@ -68,6 +66,7 @@ PasswordListScreen.navigationOptions = navData => {
           show={Item.SHOW_NEVER}
           onPress={async () => {
             await dispatch(logout());
+            await dispatch(clearServices());
             navData.navigation.navigate("Login");
           }}
         />

@@ -11,6 +11,7 @@ import { composeWithDevTools } from "redux-devtools-extension";
 import { initDB, seedData } from "./db";
 import useAppState from "react-native-appstate-hook";
 import { getLoginCreditials, clearAuthenticated } from "./store/actions/auth";
+import { clearServices } from "./store/actions/services";
 
 const middleware = [thunk];
 const rootReducer = combineReducers({

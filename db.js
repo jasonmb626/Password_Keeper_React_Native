@@ -67,7 +67,7 @@ export const initDB = async () => {
   await Promise.all([promise1, promise2]);
   const allServices = await getServicesFromDB();
   console.log("Start list of full database service contents");
-  console.log(allServices.rows._array);
+  console.log(JSON.stringify(allServices.rows._array));
   console.log("End list of full database service contents");
 };
 
@@ -79,7 +79,6 @@ export const setLoginCredentialsToDB = async (username, password) => {
         `INSERT INTO current_user (email, password) VALUES (?, ?)`,
         [username, password],
         (_, result) => {
-          console.log(result);
           resolve(result.rows);
         },
         (_, err) => {
@@ -159,7 +158,7 @@ export const getServicesFromDB = () => {
 };
 
 export const updateServiceToDB = serviceData => {
-  const promise = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
         `UPDATE services 
@@ -187,8 +186,7 @@ export const updateServiceToDB = serviceData => {
 };
 
 export const deleteServiceFromDB = serviceId => {
-  console.log(`Deleting ${serviceId}`);
-  const promise = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
         `DELETE FROM services WHERE id=?`,
@@ -205,7 +203,7 @@ export const deleteServiceFromDB = serviceId => {
 };
 
 export const deleteServicesFromDB = () => {
-  const promise = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
         `DELETE FROM services`,
@@ -222,7 +220,7 @@ export const deleteServicesFromDB = () => {
 };
 
 export const addServiceToDB = serviceData => {
-  const promise = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
         `INSERT INTO services (id, user, service, username, password, notes) 

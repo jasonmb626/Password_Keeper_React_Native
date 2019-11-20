@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Platform,
   TouchableHighlight,
@@ -19,6 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import Card from "../Components/Card";
 import { login, setAuthenticated } from "../store/actions/auth";
+import { clearServices } from "../store/actions/services";
 import Constants from "expo-constants";
 import * as LocalAuthentication from "expo-local-authentication";
 

@@ -18,14 +18,14 @@ import Constants from "expo-constants";
 const ChangePasswordScreen = props => {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const auth = useSelector(state => state.auth);
   const services = useSelector(state => state.services);
   const dispatch = useDispatch();
 
-  updatePassword = async () => {
-    if (password === confirm)
-      await dispatch(changePassword(services, password));
-    else
+  updatePassword = () => {
+    if (password === confirm) {
+      dispatch(changePassword(services, password));
+      props.navigation.pop();
+    } else
       Alert.alert("Passwords do not match.", "Passwords do not match.", [
         { text: "Okay" }
       ]);
@@ -69,7 +69,7 @@ const ChangePasswordScreen = props => {
           />
           <View style={styles.buttonContainer}>
             <Button
-              title={"Login"}
+              title={"Change"}
               color={"#000000"}
               onPress={() => updatePassword()}
             />

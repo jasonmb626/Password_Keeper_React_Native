@@ -6,7 +6,11 @@ import {
 } from "react-navigation-header-buttons";
 import { View, TextInput, Text, StyleSheet, Button, Alert } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { addUpdateService, deleteService } from "../store/actions/services";
+import {
+  addUpdateService,
+  deleteService,
+  clearServices
+} from "../store/actions/services";
 import { Ionicons } from "@expo/vector-icons";
 import { logout } from "../store/actions/auth";
 
@@ -16,15 +20,11 @@ const AddEditServiceScreen = props => {
   const auth = useSelector(state => state.auth);
   const dispatch = useDispatch();
   const serviceId = props.navigation.getParam("id");
-  console.log(`AddEditService: serviceId ${serviceId}`);
   const services = useSelector(state => state.services);
   let service = {};
   useEffect(() => {
     if (serviceId) {
-      console.log(`fetching service: ${serviceId}`);
       service = services.find(service => service.id === serviceId);
-      console.log(`fetched service: ${serviceId}`);
-      console.log(service);
       setServiceData(service);
       setLoaded(true);
     } else {
@@ -38,8 +38,6 @@ const AddEditServiceScreen = props => {
   }, []);
 
   if (!loaded) return <Text>Loading</Text>;
-  console.log("service");
-  console.log(service);
   if (auth && auth.username) {
     service.user = auth.username;
   }
@@ -87,8 +85,9 @@ const AddEditServiceScreen = props => {
           style={styles.button}
           title="Save"
           onPress={() => {
-            console.log("Dispatching serviceData");
-            dispatch(addUpdateService(serviceData, auth.password));
+            const serviceWithUser = { ...serviceData };
+            serviceWithUser.user = auth.username;
+            dispatch(addUpdateService(serviceWithUser, auth.password));
             props.navigation.pop();
           }}
         />
@@ -149,6 +148,7 @@ AddEditServiceScreen.navigationOptions = navData => {
           show={Item.SHOW_NEVER}
           onPress={async () => {
             await dispatch(logout());
+            await dispatch(clearServices());
             navData.navigation.navigate("Login");
           }}
         />

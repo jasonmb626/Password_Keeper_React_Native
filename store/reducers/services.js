@@ -2,7 +2,8 @@ import {
   GET_SERVICES,
   UPDATE_SERVICE,
   ADD_SERVICE,
-  DELETE_SERVICE
+  DELETE_SERVICE,
+  CLEAR_SERVICES
 } from "../actions/services";
 
 const initialState = [];
@@ -27,6 +28,8 @@ export default (state = initialState, action) => {
       return [...state, action.payload];
     case DELETE_SERVICE:
       return state.filter(service => service.id !== action.payload);
+    case CLEAR_SERVICES:
+      return [];
     default:
       return state;
   }
