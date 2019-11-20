@@ -85,7 +85,6 @@ export const deleteService = serviceId => async dispatch => {
 };
 
 export const getServices = (username, password) => async dispatch => {
-  console.log(`fetching for ${username} w/ password ${password}`);
   const cipherData = await getServicesForUserFromDB(username);
   let decrypted = [];
   let error = false;
@@ -103,7 +102,6 @@ export const getServices = (username, password) => async dispatch => {
         bytes = CryptoJS.AES.decrypt(entry.notes, password);
         decrypt.notes = bytes.toString(CryptoJS.enc.Utf8);
       } catch (err) {
-        console.log("error, so returning original object");
         error = true;
         return entry;
       }

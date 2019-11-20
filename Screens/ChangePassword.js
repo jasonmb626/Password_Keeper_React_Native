@@ -43,7 +43,7 @@ const ChangePasswordScreen = props => {
           <TextInput
             style={styles.input}
             id="password"
-            label="Password"
+            label="New Password"
             keyboardType="default"
             secureTextEntry
             required
