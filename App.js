@@ -1,15 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import { createStore, combineReducers, applyMiddleware } from "redux";
 import { Provider } from "react-redux";
 import { StyleSheet } from "react-native";
+import { AppLoading } from "expo";
 import NavigationContainer from "./Navigation/NavigationContainer";
 import servicesReducer from "./store/reducers/services";
 import authReducer from "./store/reducers/auth";
-import { getLoginCreditials } from "./store/actions/auth";
 import thunk from "redux-thunk";
 import { composeWithDevTools } from "redux-devtools-extension";
 import { initDB } from "./db";
 import useAppState from "react-native-appstate-hook";
+import { getLoginCreditials, clearAuthenticated } from "./store/actions/auth";
 
 const middleware = [thunk];
 const rootReducer = combineReducers({
@@ -26,14 +27,24 @@ const store = createStore(
 );
 
 export default function App() {
-  useEffect(() => {
-    store.dispatch(getLoginCreditials());
-  }, []);
+  const [loading, setLoading] = useState(true);
   const { appState } = useAppState({
-    onChange: newAppState => console.log("App state changed to ", newAppState),
-    onForeground: () => console.log("App went to Foreground"),
-    onBackground: () => console.log("App went to background")
+    onForeground: async () => {
+      await store.dispatch(clearAuthenticated());
+      setLoading(true);
+    }
   });
+
+  if (loading) {
+    return (
+      <AppLoading
+        startAsync={() => store.dispatch(getLoginCreditials())}
+        onFinish={() => {
+          setLoading(false);
+        }}
+      />
+    );
+  }
 
   return (
     <Provider store={store}>

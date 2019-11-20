@@ -8,7 +8,9 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "crypto-js": "^3.1.9-1",
     "expo": "^35.0.0",
+    "expo-local-authentication": "~7.0.0",
     "expo-sqlite": "~7.0.0",
     "react": "16.8.3",
     "react-dom": "16.8.3",
@@ -25,8 +27,7 @@
     "redux": "^4.0.4",
     "redux-devtools-extension": "^2.13.8",
     "redux-thunk": "^2.3.0",
-    "uuid": "^3.3.3",
-    "expo-local-authentication": "~7.0.0"
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
     "babel-preset-expo": "^7.1.0"

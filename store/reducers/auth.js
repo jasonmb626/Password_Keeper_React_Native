@@ -1,24 +1,55 @@
-import { AUTHENTICATE, LOGOUT } from '../actions/auth';
+import {
+  CLEAR_CREDENTIALS,
+  SET_CREDENTIALS,
+  SET_MISSING_CREDENTIALS,
+  SET_AUTHENTICATED,
+  CLEAR_AUTHENTICATED
+} from "../actions/auth";
 
 const initialState = {
-  token: null,
-  userId: null
+  username: null,
+  password: null,
+  missingCredentials: false,
+  loading: true,
+  authenticated: false
 };
 
 export default (state = initialState, action) => {
   switch (action.type) {
-    case AUTHENTICATE:
+    case SET_CREDENTIALS:
       return {
-        token: action.token,
-        userId: action.userId
+        username: action.username,
+        password: action.password,
+        missingCredentials: false,
+        loading: false,
+        authenticated: false
       };
-    case LOGOUT:
-      return initialState;
-    // case SIGNUP:
-    //   return {
-    //     token: action.token,
-    //     userId: action.userId
-    //   };
+    case CLEAR_CREDENTIALS:
+      return {
+        username: null,
+        password: null,
+        missingCredentials: true,
+        loading: false,
+        authenticated: false
+      };
+    case SET_MISSING_CREDENTIALS:
+      return {
+        username: null,
+        password: null,
+        missingCredentials: true,
+        loading: false,
+        authenticated: false
+      };
+    case SET_AUTHENTICATED:
+      return {
+        ...state,
+        authenticated: true
+      };
+    case CLEAR_AUTHENTICATED:
+      return {
+        ...state,
+        authenticated: false
+      };
     default:
       return state;
   }

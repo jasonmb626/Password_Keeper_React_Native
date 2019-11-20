@@ -15,21 +15,21 @@ import {
   Image
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import Card from "../Components/Card";
-import * as authActions from "../store/actions/auth";
+import { login, setAuthenticated } from "../store/actions/auth";
 import Constants from "expo-constants";
 import * as LocalAuthentication from "expo-local-authentication";
 
-const FORM_INPUT_UPDATE = "FORM_INPUT_UPDATE";
-
-const AuthScreen = props => {
-  const [authenticated, setAuthenticated] = useState(false);
+const LoginScreen = props => {
+  const auth = useSelector(state => state.auth);
   const [modalVisible, setModalVisible] = useState(false);
   const [failedCount, setFailedCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const dispatch = useDispatch();
 
   clearState = () => {
@@ -42,8 +42,11 @@ const AuthScreen = props => {
       let results = await LocalAuthentication.authenticateAsync();
       if (results.success) {
         setModalVisible(false);
-        setAuthenticated(true);
         setFailedCount(0);
+        await dispatch(setAuthenticated());
+        setUsername("");
+        setPassword("");
+        props.navigation.navigate("ServiceList", { dispatch });
       } else {
         setFailedCount(failedCount + 1);
       }
@@ -52,18 +55,6 @@ const AuthScreen = props => {
     }
   };
 
-  const [formState, dispatchFormState] = useReducer(formReducer, {
-    inputValues: {
-      email: "",
-      password: ""
-    },
-    inputValidities: {
-      email: false,
-      password: false
-    },
-    formIsValid: false
-  });
-
   useEffect(() => {
     if (error) {
       Alert.alert("An Error Occurred!", error, [{ text: "Okay" }]);
@@ -71,35 +62,13 @@ const AuthScreen = props => {
   }, [error]);
 
   const authHandler = async () => {
-    let action;
-    action = authActions.login(
-      formState.inputValues.email,
-      formState.inputValues.password
-    );
-    setError(null);
-    setIsLoading(true);
-    try {
-      await dispatch(action);
-      props.navigation.navigate("Shop");
-    } catch (err) {
-      setError(err.message);
-      setIsLoading(false);
-    }
+    await dispatch(login(username, password));
+    await dispatch(setAuthenticated());
+    setUsername("");
+    setPassword("");
+    props.navigation.navigate("ServiceList", { dispatch });
   };
 
-  const inputChangeHandler = useCallback(
-    (inputIdentifier, inputValue, inputValidity) => {
-      dispatchFormState({
-        type: FORM_INPUT_UPDATE,
-        value: inputValue,
-        isValid: inputValidity,
-        input: inputIdentifier
-      });
-    },
-    [dispatchFormState]
-  );
-
-  console.log("Rendering");
   return (
     <KeyboardAvoidingView
       behavior="padding"
@@ -119,8 +88,8 @@ const AuthScreen = props => {
               email
               autoCapitalize="none"
               errorText="Please enter a valid email address."
-              onInputChange={inputChangeHandler}
-              initialValue=""
+              onChangeText={text => setUsername(text)}
+              value={username}
             />
             <Text>Password:</Text>
             <TextInput
@@ -133,8 +102,8 @@ const AuthScreen = props => {
               minLength={5}
               autoCapitalize="none"
               errorText="Please enter a valid password."
-              onInputChange={inputChangeHandler}
-              initialValue=""
+              onChangeText={text => setPassword(text)}
+              value={password}
             />
             <View style={styles.buttonContainer}>
               {isLoading ? (
@@ -147,25 +116,19 @@ const AuthScreen = props => {
                 />
               )}
             </View>
-            <Button
-              title={
-                authenticated
-                  ? "Reset and begin Authentication again"
-                  : "Begin Authentication"
-              }
-              onPress={() => {
-                clearState();
-                if (Platform.OS === "android") {
-                  setModalVisible(!modalVisible);
-                } else {
-                  scanFingerPrint();
-                }
-              }}
-            />
-            {authenticated && (
-              <Text style={styles.text}>Authentication Successful! 🎉</Text>
+            {!auth.missingCredentials && (
+              <Button
+                title={"Begin Authentication"}
+                onPress={() => {
+                  clearState();
+                  if (Platform.OS === "android") {
+                    setModalVisible(!modalVisible);
+                  } else {
+                    scanFingerPrint();
+                  }
+                }}
+              />
             )}
-
             <Modal
               animationType="slide"
               transparent={true}
@@ -202,7 +165,7 @@ const AuthScreen = props => {
   );
 };
 
-AuthScreen.navigationOptions = {
+LoginScreen.navigationOptions = {
   headerTitle: "Authenticate"
 };
 
@@ -257,4 +220,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default AuthScreen;
+export default LoginScreen;

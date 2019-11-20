@@ -3,11 +3,12 @@ import {
   clearLoginCredentialsFromDB,
   getLoginCredentialsFromDB
 } from "../../db";
-import { createAppContainer } from "react-navigation";
 
 export const SET_CREDENTIALS = "SET_CREDENTIALS";
 export const CLEAR_CREDENTIALS = "CLEAR_CREDENTIALS";
 export const SET_MISSING_CREDENTIALS = "SET_MISSING_CREDENTIALS";
+export const SET_AUTHENTICATED = "SET_AUTHENTICATED";
+export const CLEAR_AUTHENTICATED = "CLEAR_AUTHENTICATED";
 
 export const login = (username, password) => async dispatch => {
   await setLoginCredentialsToDB(username, password);
@@ -16,19 +17,26 @@ export const login = (username, password) => async dispatch => {
 
 export const logout = () => async dispatch => {
   await clearLoginCredentialsFromDB();
-  return { type: CLEAR_CREDENTIALS };
+  dispatch({ type: CLEAR_CREDENTIALS });
+};
+
+export const setAuthenticated = () => async dispatch => {
+  dispatch({ type: SET_AUTHENTICATED });
+};
+
+export const clearAuthenticated = () => async dispatch => {
+  dispatch({ type: CLEAR_AUTHENTICATED });
 };
 
 export const getLoginCreditials = () => async dispatch => {
-  console.log("Fetching credentials");
   try {
     const credentials = await getLoginCredentialsFromDB();
-    console.log("Displaying credentials");
-    console.log(credentials);
-    console.log("Displayed credentials");
+    dispatch({
+      type: SET_CREDENTIALS,
+      username: credentials.email,
+      password: credentials.password
+    });
   } catch (err) {
-    //console.log(err);
-    console.log("No login credentials");
-    return { type: SET_MISSING_CREDENTIALS };
+    dispatch({ type: SET_MISSING_CREDENTIALS });
   }
 };

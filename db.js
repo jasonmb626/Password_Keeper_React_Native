@@ -38,13 +38,14 @@ export const initDB = () => {
 };
 
 export const setLoginCredentialsToDB = async (username, password) => {
-  await clearLoginCredentials();
+  await clearLoginCredentialsFromDB();
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
         `INSERT INTO current_user (email, password) VALUES (?, ?)`,
         [username, password],
         (_, result) => {
+          console.log(result);
           resolve(result.rows);
         },
         (_, err) => {
@@ -55,15 +56,14 @@ export const setLoginCredentialsToDB = async (username, password) => {
   });
 };
 
-export const getLoginCredentialsFromDB = async (username, password) => {
-  await clearLoginCredentialsFromDB();
+export const getLoginCredentialsFromDB = async () => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
         `SELECT * FROM current_user`,
-        [username, password],
+        [],
         (_, result) => {
-          resolve(result.rows);
+          resolve(result.rows._array[0]);
         },
         (_, err) => {
           reject(err);
@@ -90,12 +90,12 @@ export const clearLoginCredentialsFromDB = () => {
   });
 };
 
-export const getServicesFromDB = () => {
+export const getServicesFromDB = user => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        `SELECT * FROM services`,
-        [],
+        `SELECT * FROM services WHERE user=?`,
+        [user],
         (_, result) => {
           resolve(result.rows);
         },
@@ -154,27 +154,48 @@ export const deleteServiceFromDB = serviceId => {
 };
 
 export const addServiceToDB = serviceData => {
-  console.log(`Adding ${serviceData.service}`);
   const promise = new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
         `INSERT INTO services (id, user, service, username, password, notes) 
-            VALUES (?, 'jason@jasonbrunelle.com', ?, ?, ?, ?) `,
+            VALUES (?, ?, ?, ?, ?, ?) `,
         [
           serviceData.id,
+          serviceData.user,
           serviceData.service,
           serviceData.username,
           serviceData.password,
           serviceData.notes
         ],
         (TX, result) => {
-          console.log(TX);
-          console.log(result);
           resolve(result);
         },
         (TX, err) => {
-          console.log(TX);
-          console.error(err);
+          reject(err);
+        }
+      );
+    });
+  });
+};
+
+export const reenctryptWithNewPasswordToDB = serviceData => {
+  const promise = new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `INSERT INTO services (id, user, service, username, password, notes) 
+            VALUES (?, ?, ?, ?, ?, ?) `,
+        [
+          serviceData.id,
+          serviceData.user,
+          serviceData.service,
+          serviceData.username,
+          serviceData.password,
+          serviceData.notes
+        ],
+        (TX, result) => {
+          resolve(result);
+        },
+        (TX, err) => {
           reject(err);
         }
       );
