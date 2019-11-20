@@ -1,9 +1,39 @@
 import * as SQLite from "expo-sqlite";
+import servicesJSON from "./passwords.json";
 import uuid from "uuid";
+import CryptoJS from "crypto-js";
 
 const db = SQLite.openDatabase("password_keeper.db");
 
-export const initDB = () => {
+export const seedData = async () => {
+  const revisedServices = servicesJSON.map(service => {
+    const revisedService = service;
+    const newPassword = "123456";
+    revisedService.service = CryptoJS.AES.encrypt(
+      service.service,
+      newPassword
+    ).toString();
+    revisedService.username = CryptoJS.AES.encrypt(
+      service.username,
+      newPassword
+    ).toString();
+    revisedService.password = CryptoJS.AES.encrypt(
+      service.password,
+      newPassword
+    ).toString();
+    revisedService.notes = CryptoJS.AES.encrypt(
+      service.notes,
+      newPassword
+    ).toString();
+    return revisedService;
+  });
+  await deleteServicesFromDB();
+  revisedServices.forEach(service => {
+    addServiceToDB(service);
+  });
+};
+
+export const initDB = async () => {
   const promise1 = new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
@@ -34,7 +64,11 @@ export const initDB = () => {
       );
     });
   });
-  return Promise.all([promise1, promise2]);
+  await Promise.all([promise1, promise2]);
+  const allServices = await getServicesFromDB();
+  console.log("Start list of full database service contents");
+  console.log(allServices.rows._array);
+  console.log("End list of full database service contents");
 };
 
 export const setLoginCredentialsToDB = async (username, password) => {
@@ -90,7 +124,7 @@ export const clearLoginCredentialsFromDB = () => {
   });
 };
 
-export const getServicesFromDB = user => {
+export const getServicesForUserFromDB = user => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
@@ -98,6 +132,23 @@ export const getServicesFromDB = user => {
         [user],
         (_, result) => {
           resolve(result.rows);
+        },
+        (_, err) => {
+          reject(err);
+        }
+      );
+    });
+  });
+};
+
+export const getServicesFromDB = () => {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `SELECT * FROM services`,
+        [],
+        (_, result) => {
+          resolve(result);
         },
         (_, err) => {
           reject(err);
@@ -142,6 +193,23 @@ export const deleteServiceFromDB = serviceId => {
       tx.executeSql(
         `DELETE FROM services WHERE id=?`,
         [serviceId],
+        (TX, result) => {
+          resolve(result);
+        },
+        (TX, err) => {
+          reject(err);
+        }
+      );
+    });
+  });
+};
+
+export const deleteServicesFromDB = () => {
+  const promise = new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `DELETE FROM services`,
+        [],
         (TX, result) => {
           resolve(result);
         },

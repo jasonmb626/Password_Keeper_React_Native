@@ -1,8 +1,9 @@
 import {
   updateServiceToDB,
-  getServicesFromDB,
+  getServicesForUserFromDB,
   addServiceToDB,
-  reenctryptWithNewPasswordToDB
+  reenctryptWithNewPasswordToDB,
+  deleteServiceFromDB
 } from "../../db";
 import CryptoJS from "crypto-js";
 
@@ -13,10 +14,36 @@ export const GET_SERVICES = "GET_SERVICES";
 export const DELETE_SERVICE = "DELETE_SERVICE";
 import { UPDATE_PASSWORD } from "../actions/auth";
 
-export const addUpdateService = serviceData => async dispatch => {
-  if (serviceData.id) {
+export const addUpdateService = (serviceData, password) => async dispatch => {
+  let isNewEntry = false;
+
+  console.log("add/edit action: sevice data");
+  console.log(serviceData);
+  if (!serviceData.id) {
+    console.log("add/edit action: assigning id");
+    serviceData.id = uuid();
+    isNewEntry = true;
+  }
+  const revisedService = { ...serviceData };
+  revisedService.service = CryptoJS.AES.encrypt(
+    serviceData.service,
+    password
+  ).toString();
+  revisedService.username = CryptoJS.AES.encrypt(
+    serviceData.username,
+    password
+  ).toString();
+  revisedService.password = CryptoJS.AES.encrypt(
+    serviceData.password,
+    password
+  ).toString();
+  revisedService.notes = CryptoJS.AES.encrypt(
+    serviceData.notes,
+    password
+  ).toString();
+  if (!isNewEntry) {
     try {
-      await updateServiceToDB(serviceData);
+      await updateServiceToDB(revisedService);
       dispatch({
         type: UPDATE_SERVICE,
         payload: serviceData
@@ -28,7 +55,7 @@ export const addUpdateService = serviceData => async dispatch => {
   } else {
     serviceData.id = uuid();
     try {
-      await addServiceToDB(serviceData);
+      await addServiceToDB(revisedService);
       dispatch({
         type: ADD_SERVICE,
         payload: serviceData
@@ -54,48 +81,43 @@ export const deleteService = serviceId => async dispatch => {
 };
 
 export const getServices = (username, password) => async dispatch => {
-  // Encrypt
-  var ciphertext = CryptoJS.AES.encrypt("Facebook", "123456");
+  const cipherData = await getServicesForUserFromDB(username);
+  console.log(
+    `start list of cipher data for user ${username} with password ${password}`
+  );
+  console.log(cipherData);
+  console.log(`end list of cipher data for user ${username}`);
 
-  // Decrypt
-  var bytes = CryptoJS.AES.decrypt(ciphertext.toString(), "123456");
-  var plaintext = bytes.toString(CryptoJS.enc.Utf8);
-  console.log(ciphertext.toString());
-  console.log(plaintext);
-
-  const cipherData = await getServicesFromDB(username);
-  console.log(`username ${username}`);
-  console.log(`password ${password.toString()}`);
   let decrypted = [];
   if (password !== "") {
     decrypted = cipherData._array.map(entry => {
-      let decrypt = entry;
+      let decrypt = { ...entry };
       let bytes;
-      let decryptedEntry;
-      bytes = CryptoJS.AES.decrypt(
-        entry.service.toString(),
-        password.toString()
-      );
-      decryptedEntry = bytes.toString(CryptoJS.enc.Utf8);
-      console.log(`decryptedEntry: ${decryptedEntry}`);
-      decrypt.service = decryptedEntry;
-      bytes = CryptoJS.AES.decrypt(entry.username, password.toString());
+      console.log(`id ${decrypt.id}`);
+      bytes = CryptoJS.AES.decrypt(entry.service, password);
+      console.log(`service e ${entry.service}`);
+      console.log(`service d ${bytes.toString(CryptoJS.enc.Utf8)}`);
+      decrypt.service = bytes.toString(CryptoJS.enc.Utf8);
+      bytes = CryptoJS.AES.decrypt(entry.username, password);
+      console.log(`username e ${entry.username}`);
+      console.log(`username d ${bytes.toString(CryptoJS.enc.Utf8)}`);
       decrypt.username = bytes.toString(CryptoJS.enc.Utf8);
-      bytes = CryptoJS.AES.decrypt(entry.password, password.toString());
+      bytes = CryptoJS.AES.decrypt(entry.password, password);
+      console.log(
+        `password ${entry.password} ${bytes.toString(CryptoJS.enc.Utf8)}`
+      );
       decrypt.password = bytes.toString(CryptoJS.enc.Utf8);
-      bytes = CryptoJS.AES.decrypt(entry.notes, password.toString());
+      bytes = CryptoJS.AES.decrypt(entry.notes, password);
+      console.log(`notes ${entry.notes} ${bytes.toString(CryptoJS.enc.Utf8)}`);
       decrypt.notes = bytes.toString(CryptoJS.enc.Utf8);
-      console.log("encrypted");
-      console.log(entry);
-      console.log("decrypted");
-      console.log(decrypt);
       return decrypt;
     });
   } else {
     decrypted = cipherData._array;
   }
-  // console.log("decrypted");
-  // console.log(decrypted);
+  console.log(`start list of decrypted data for user ${username}`);
+  console.log(decrypted);
+  console.log(`end list of decrypted data for user ${username}`);
   dispatch({
     type: GET_SERVICES,
     payload: decrypted

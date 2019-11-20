@@ -22,6 +22,8 @@ const PasswordListScreen = props => {
   useEffect(() => {
     dispatch(getServices(auth.username, auth.password));
   }, []);
+  console.log("ServiceListScreen: data");
+  console.log(data);
   return (
     <FlatList
       style={styles.container}

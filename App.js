@@ -8,7 +8,7 @@ import servicesReducer from "./store/reducers/services";
 import authReducer from "./store/reducers/auth";
 import thunk from "redux-thunk";
 import { composeWithDevTools } from "redux-devtools-extension";
-import { initDB } from "./db";
+import { initDB, seedData } from "./db";
 import useAppState from "react-native-appstate-hook";
 import { getLoginCreditials, clearAuthenticated } from "./store/actions/auth";
 
@@ -19,6 +19,7 @@ const rootReducer = combineReducers({
 });
 
 initDB();
+//seedData();
 
 const store = createStore(
   rootReducer,

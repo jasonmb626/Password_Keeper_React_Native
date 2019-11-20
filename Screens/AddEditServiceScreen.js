@@ -1,33 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   HeaderButton,
   HeaderButtons,
   Item
 } from "react-navigation-header-buttons";
-import { View, TextInput, Text, StyleSheet, Button } from "react-native";
+import { View, TextInput, Text, StyleSheet, Button, Alert } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { addUpdateService, deleteService } from "../store/actions/services";
 import { Ionicons } from "@expo/vector-icons";
 import { logout } from "../store/actions/auth";
 
 const AddEditServiceScreen = props => {
+  const [loaded, setLoaded] = useState(false);
+  const [serviceData, setServiceData] = useState({});
   const auth = useSelector(state => state.auth);
   const dispatch = useDispatch();
   const serviceId = props.navigation.getParam("id");
+  console.log(`AddEditService: serviceId ${serviceId}`);
+  const services = useSelector(state => state.services);
   let service = {};
-  if (serviceId)
-    service = useSelector(state => state.services).find(
-      service => service.id === serviceId
-    );
-  else {
-    service.id = null;
-    service.service = "";
-    service.username = "";
-    service.password = "";
-    service.notes = "";
+  useEffect(() => {
+    if (serviceId) {
+      console.log(`fetching service: ${serviceId}`);
+      service = services.find(service => service.id === serviceId);
+      console.log(`fetched service: ${serviceId}`);
+      console.log(service);
+      setServiceData(service);
+      setLoaded(true);
+    } else {
+      service.id = null;
+      service.service = "";
+      service.username = "";
+      service.password = "";
+      service.notes = "";
+      setLoaded(true);
+    }
+  }, []);
+
+  if (!loaded) return <Text>Loading</Text>;
+  console.log("service");
+  console.log(service);
+  if (auth && auth.username) {
+    service.user = auth.username;
   }
-  service.user = auth.username;
-  const [serviceData, setServiceData] = useState(service);
 
   const onChange = (inputField, text) => {
     setServiceData({ ...serviceData, [inputField]: text });
@@ -72,7 +87,8 @@ const AddEditServiceScreen = props => {
           style={styles.button}
           title="Save"
           onPress={() => {
-            dispatch(addUpdateService(serviceData));
+            console.log("Dispatching serviceData");
+            dispatch(addUpdateService(serviceData, auth.password));
             props.navigation.pop();
           }}
         />
@@ -88,6 +104,7 @@ const AddEditServiceScreen = props => {
 
 AddEditServiceScreen.navigationOptions = navData => {
   const dispatch = navData.navigation.getParam("dispatch");
+  const serviceId = navData.navigation.getParam("id");
   return {
     title: "All Passwords",
     headerRight: () => (
@@ -100,7 +117,27 @@ AddEditServiceScreen.navigationOptions = navData => {
           IconComponent={Ionicons}
           iconSize={23}
           iconName="md-trash"
-          onPress={() => props.navData.navigation.navigate("AddEditService")}
+          onPress={async () => {
+            Alert.alert(
+              "Delete this entry?",
+              "",
+              [
+                {
+                  text: "OK",
+                  onPress: async () => {
+                    await dispatch(deleteService(serviceId));
+                    navData.navigation.navigate("ServiceList");
+                  }
+                },
+                {
+                  text: "Cancel",
+                  onPress: () => console.log("Cancel Pressed"),
+                  style: "cancel"
+                }
+              ],
+              { cancelable: false }
+            );
+          }}
         />
         <Item
           title="Change Password"
