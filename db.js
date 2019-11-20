@@ -179,18 +179,17 @@ export const addServiceToDB = serviceData => {
 };
 
 export const reenctryptWithNewPasswordToDB = serviceData => {
-  const promise = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        `INSERT INTO services (id, user, service, username, password, notes) 
-            VALUES (?, ?, ?, ?, ?, ?) `,
+        `UPDATE services SET service=?, username=?, password=?, notes=?
+        WHERE id=?`,
         [
-          serviceData.id,
-          serviceData.user,
           serviceData.service,
           serviceData.username,
           serviceData.password,
-          serviceData.notes
+          serviceData.notes,
+          serviceData.id
         ],
         (TX, result) => {
           resolve(result);

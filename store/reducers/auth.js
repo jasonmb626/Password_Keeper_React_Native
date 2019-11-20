@@ -3,7 +3,8 @@ import {
   SET_CREDENTIALS,
   SET_MISSING_CREDENTIALS,
   SET_AUTHENTICATED,
-  CLEAR_AUTHENTICATED
+  CLEAR_AUTHENTICATED,
+  UPDATE_PASSWORD
 } from "../actions/auth";
 
 const initialState = {
@@ -49,6 +50,11 @@ export default (state = initialState, action) => {
       return {
         ...state,
         authenticated: false
+      };
+    case UPDATE_PASSWORD:
+      return {
+        ...state,
+        password: action.password
       };
     default:
       return state;

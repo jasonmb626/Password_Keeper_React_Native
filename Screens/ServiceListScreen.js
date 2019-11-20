@@ -57,7 +57,7 @@ PasswordListScreen.navigationOptions = navData => {
           IconComponent={Ionicons}
           iconSize={23}
           show={Item.SHOW_NEVER}
-          onPress={() => alert("change password")}
+          onPress={() => navData.navigation.navigate("ChangePassword")}
         />
         <Item
           title="Logout"

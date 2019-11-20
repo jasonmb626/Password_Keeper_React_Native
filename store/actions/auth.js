@@ -9,6 +9,7 @@ export const CLEAR_CREDENTIALS = "CLEAR_CREDENTIALS";
 export const SET_MISSING_CREDENTIALS = "SET_MISSING_CREDENTIALS";
 export const SET_AUTHENTICATED = "SET_AUTHENTICATED";
 export const CLEAR_AUTHENTICATED = "CLEAR_AUTHENTICATED";
+export const UPDATE_PASSWORD = "UPDATE_PASSWORD";
 
 export const login = (username, password) => async dispatch => {
   await setLoginCredentialsToDB(username, password);

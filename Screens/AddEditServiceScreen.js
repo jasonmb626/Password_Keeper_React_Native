@@ -105,7 +105,7 @@ AddEditServiceScreen.navigationOptions = navData => {
         <Item
           title="Change Password"
           show={Item.SHOW_NEVER}
-          onPress={() => alert("change password")}
+          onPress={() => navData.navigation.navigate("ChangePassword")}
         />
         <Item
           title="Logout"
