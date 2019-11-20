@@ -19,7 +19,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 import Card from "../Components/Card";
 import { login, setAuthenticated } from "../store/actions/auth";
-import { clearServices } from "../store/actions/services";
 import Constants from "expo-constants";
 import * as LocalAuthentication from "expo-local-authentication";
 
@@ -63,11 +62,17 @@ const LoginScreen = props => {
   }, [error]);
 
   const authHandler = async () => {
-    await dispatch(login(username, password));
-    await dispatch(setAuthenticated());
-    setUsername("");
-    setPassword("");
-    props.navigation.navigate("ServiceList", { dispatch });
+    if (username === "") {
+      Alert.alert("Please enter a username", error, [{ text: "Okay" }]);
+    } else if (password === "") {
+      Alert.alert("Please enter a password", error, [{ text: "Okay" }]);
+    } else {
+      await dispatch(login(username, password));
+      await dispatch(setAuthenticated());
+      setUsername("");
+      setPassword("");
+      props.navigation.navigate("ServiceList", { dispatch });
+    }
   };
 
   return (
@@ -76,7 +81,7 @@ const LoginScreen = props => {
       keyboardVerticalOffset={50}
       style={styles.screen}
     >
-      <LinearGradient colors={["#ffedff", "#ffe3ff"]} style={styles.gradient}>
+      <LinearGradient colors={["#281f47", "#753369"]} style={styles.gradient}>
         <Card style={styles.authContainer}>
           <ScrollView>
             <Text>Email:</Text>
@@ -119,14 +124,10 @@ const LoginScreen = props => {
             </View>
             {!auth.missingCredentials && (
               <Button
-                title={"Begin Authentication"}
+                title={"Fingerprint Login"}
                 onPress={() => {
                   clearState();
-                  if (Platform.OS === "android") {
-                    setModalVisible(!modalVisible);
-                  } else {
-                    scanFingerPrint();
-                  }
+                  setModalVisible(!modalVisible);
                 }}
               />
             )}

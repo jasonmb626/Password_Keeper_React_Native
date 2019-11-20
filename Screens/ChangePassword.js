@@ -39,7 +39,7 @@ const ChangePasswordScreen = props => {
     >
       <Card style={styles.authContainer}>
         <ScrollView>
-          <Text>Password:</Text>
+          <Text>New Password:</Text>
           <TextInput
             style={styles.input}
             id="password"
