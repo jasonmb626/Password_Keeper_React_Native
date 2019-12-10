@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import { clearLoginCredentialsFromDB, getLoginCredentialsFromDB } from '../db';
 
 export interface IAuth {
@@ -27,7 +27,7 @@ export const getLoginCreditials = async () => {
       password: credentials.password
     };
   } catch (err) {
-    return {};
+    return null;
   }
 };
 
@@ -43,7 +43,6 @@ export const Auth = createContext<AuthProvider>({
 });
 
 const AuthProvider: React.FC = props => {
-  console.log('Setting auth context');
   const [auth, setAuth] = useState<IAuth>({
     username: null,
     password: null,
@@ -51,6 +50,17 @@ const AuthProvider: React.FC = props => {
     loading: true,
     authenticated: false
   });
+
+  useEffect(() => {
+    getLoginCreditials().then(credentials => {
+      if (credentials) {
+        setAuth({...auth, username: credentials.username, password: credentials.password});
+      } else {
+        setAuth({...auth, missingCredentials: true})
+      }
+    });
+
+  }, []);
 
   return (
     <Auth.Provider value={{ auth, setAuth }}>{props.children}</Auth.Provider>

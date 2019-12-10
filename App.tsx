@@ -1,8 +1,9 @@
 import React, { useState, useContext, useEffect } from 'react';
-import MainNavigator from './Navigation/MainNavigator';
+import AuthNavigator from './Navigation/AuthNavigator';
 import { initDB, seedData, getLoginCredentialsFromDB } from './db';
 import { AppLoading } from 'expo';
-import { Auth, CurrentUser } from './context/auth';
+import AuthProvider, { Auth, CurrentUser } from './context/auth';
+import ServicesProvider from './context/services';
 
 initDB();
 //seedData();
@@ -14,11 +15,8 @@ export default function App() {
   const auth = useContext(Auth);
 
   useEffect(() => {
-    console.log('loading state changed credentials');
     if (!loading) {
-      console.log(auth);
       if (auth && auth.setAuth) {
-        console.log('missing credentials');
         if (username !== '')
           auth.setAuth({
             authenticated: true,
@@ -28,7 +26,6 @@ export default function App() {
             username
           });
         else {
-          console.log('not authenticated');
           auth.setAuth({
             authenticated: false,
             loading: false,
@@ -55,11 +52,10 @@ export default function App() {
           });
         }}
         onFinish={() => {
-          console.log('done loading');
           setLoading(false);
         }}
       />
     );
   }
-  return <MainNavigator />;
+  return <AuthProvider><ServicesProvider><AuthNavigator /></ServicesProvider></AuthProvider>;
 }

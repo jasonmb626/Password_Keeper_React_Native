@@ -6,7 +6,6 @@ import {
   reenctryptWithNewPasswordToDB
 } from '../db';
 import CryptoJS from 'crypto-js';
-import { withNavigation } from 'react-navigation';
 
 import uuid from 'uuid';
 
@@ -43,9 +42,9 @@ export const getServices = async (
   username: string | null,
   password: string | null
 ) => {
-  if (username === null || password === null) return;
-  console.log(username);
-  console.log(password);
+  if (username === null || password === null) {
+    return;
+  }
 
   const cipherData = await getServicesForUserFromDB(username);
   let decrypted: IService[] = [];
@@ -165,4 +164,4 @@ export const addUpdateService = async (
   }
 };
 
-export default withNavigation(ServiceProvider);
+export default ServiceProvider;

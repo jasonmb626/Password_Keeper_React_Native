@@ -19,6 +19,7 @@ import { Auth } from '../context/auth';
 import Card from '../Components/Card';
 import Constants from 'expo-constants';
 import * as LocalAuthentication from 'expo-local-authentication';
+import {setLoginCredentialsToDB} from '../db';
 
 const LoginScreen: NavigationStackScreenComponent = props => {
   const auth = useContext(Auth);
@@ -69,7 +70,9 @@ const LoginScreen: NavigationStackScreenComponent = props => {
       Alert.alert('Please enter a password', error, [{ text: 'Okay' }]);
     } else {
       if (auth && auth.setAuth) {
-        auth.setAuth({ ...auth.auth, username, password, authenticated: true });
+        const insertID = await  setLoginCredentialsToDB(username, password).catch(err => console.error(err));
+        console.log('inserted into database? ' + insertID)
+        auth.setAuth({ ...auth.auth, username, password, authenticated: true, missingCredentials: false });
       }
       setUsername('');
       setPassword('');

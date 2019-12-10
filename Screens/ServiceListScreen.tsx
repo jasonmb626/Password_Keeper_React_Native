@@ -32,7 +32,7 @@ const PasswordListScreen: NavigationStackScreenComponent = props => {
   const services = useContext(Services);
   const auth = useContext(Auth);
 
-  const logoutHandler = async (navData: NAVDATA) => {
+  const logoutHandler = async () => {
     await clearLoginCredentialsFromDB();
     if (auth && auth.setAuth) {
       auth.setAuth({
@@ -46,13 +46,14 @@ const PasswordListScreen: NavigationStackScreenComponent = props => {
     if (services && services.setServices) {
       services.setServices([]);
     }
-    navData.navigation.navigate('login');
+    props.navigation.navigate('login');
   };
 
   useEffect(() => {
     getServices(auth.auth.username, auth.auth.password).then(
       fetchedServices => {
         console.log(fetchedServices);
+        console.log (services);
         if (services && services.setServices)
           services.setServices(fetchedServices as IService[]);
       }

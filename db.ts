@@ -74,9 +74,9 @@ export const initDB = async () => {
   });
   await Promise.all([promise1, promise2]);
   const allServices = await getServicesFromDB();
-  // console.log('Start list of full database service contents');
-  // console.log(JSON.stringify(allServices));
-  // console.log('End list of full database service contents');
+  //  console.log('Start list of full database service contents');
+  //  console.log(JSON.stringify(allServices));
+  //  console.log('End list of full database service contents');
 };
 
 export const setLoginCredentialsToDB = async (
