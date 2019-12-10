@@ -3,7 +3,8 @@ import {
   updateServiceToDB,
   getServicesForUserFromDB,
   addServiceToDB,
-  reenctryptWithNewPasswordToDB
+  reenctryptWithNewPasswordToDB,
+  deleteServiceFromDB
 } from '../db';
 import CryptoJS from 'crypto-js';
 
@@ -142,7 +143,7 @@ export const addUpdateService = async (
       await updateServiceToDB(revisedService);
       if (services && services.services && services.setServices) {
         const revisedServices = services.services.map(service => {
-          if (service.id === serviceData.id) return revisedService;
+          if (service.id === serviceData.id) return serviceData;
           else return { ...service };
         });
         services.setServices(revisedServices);
@@ -155,13 +156,29 @@ export const addUpdateService = async (
     try {
       await addServiceToDB(revisedService);
       if (services && services.services && services.setServices) {
-        services.setServices([...services.services, revisedService]);
+        services.setServices([...services.services, serviceData]);
       }
     } catch (err) {
       console.log('Error');
       console.error(err);
     }
   }
+};
+
+export const deleteService = async (
+  serviceId: string,
+  services: ServiceProvider
+) => {
+    try {
+      await deleteServiceFromDB(serviceId);
+      if (services && services.services && services.setServices) {
+        services.setServices(services.services.filter(service => service.id !== serviceId));
+      }
+    } catch (err) {
+      console.log('Error');
+      console.error(err);
+    }
+  
 };
 
 export default ServiceProvider;

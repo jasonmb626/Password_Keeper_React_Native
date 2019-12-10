@@ -2,10 +2,18 @@ import React, {useContext, useRef, useEffect } from 'react';
 import {Auth} from '../context/auth';
 import MainNavigator from './MainNavigator';
 import { NavigationContainerComponent, NavigationActions } from 'react-navigation';
+// import useAppState from "react-native-appstate-hook";
 
-const AuthNavigator = () => {
+const AuthNavigator: React.FC = () => {
     const auth = useContext(Auth);
     const ref = useRef<NavigationContainerComponent>(null);
+
+    // const { appState } = useAppState({
+    //     onForeground: async () => {
+    //       await clearAuthenticated();
+    //       setLoading(true);
+    //     }
+    //   });
 
     useEffect(() => {
     if (!auth.auth.authenticated)

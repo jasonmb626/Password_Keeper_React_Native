@@ -36,8 +36,8 @@ const PasswordListScreen: NavigationStackScreenComponent = props => {
     await clearLoginCredentialsFromDB();
     if (auth && auth.setAuth) {
       auth.setAuth({
-        username: null,
-        password: null,
+        username: '',
+        password: '',
         missingCredentials: true,
         loading: false,
         authenticated: false
@@ -52,8 +52,6 @@ const PasswordListScreen: NavigationStackScreenComponent = props => {
   useEffect(() => {
     getServices(auth.auth.username, auth.auth.password).then(
       fetchedServices => {
-        console.log(fetchedServices);
-        console.log (services);
         if (services && services.setServices)
           services.setServices(fetchedServices as IService[]);
       }

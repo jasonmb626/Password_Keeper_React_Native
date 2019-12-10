@@ -15,7 +15,7 @@ import {
   Item
 } from 'react-navigation-header-buttons';
 import { View, TextInput, Text, StyleSheet, Button, Alert } from 'react-native';
-import { Services, IService, addUpdateService } from '../context/services';
+import { Services, IService, addUpdateService, deleteService } from '../context/services';
 import { Auth } from '../context/auth';
 import { Ionicons } from '@expo/vector-icons';
 import { clearLoginCredentialsFromDB } from '../db';
@@ -51,8 +51,8 @@ const AddEditServiceScreen: NavigationStackScreenComponent = props => {
     await clearLoginCredentialsFromDB();
     if (auth && auth.setAuth) {
       auth.setAuth({
-        username: null,
-        password: null,
+        username: '',
+        password: '',
         missingCredentials: true,
         loading: false,
         authenticated: false
@@ -82,6 +82,7 @@ const AddEditServiceScreen: NavigationStackScreenComponent = props => {
       setLoaded(true);
     }
     props.navigation.setParams({ logoutHandler });
+    props.navigation.setParams({ services });
   }, []);
 
   if (!loaded) return <Text>Loading</Text>;
@@ -139,7 +140,8 @@ const AddEditServiceScreen: NavigationStackScreenComponent = props => {
 
 AddEditServiceScreen.navigationOptions = navData => {
   const logoutHandler = navData.navigation.getParam('logoutHanlder');
-
+  const services = navData.navigation.getParam('services');
+  const serviceId = navData.navigation.getParam('id');
   return {
     title: 'All Passwords',
     headerRight: () => (
@@ -160,7 +162,7 @@ AddEditServiceScreen.navigationOptions = navData => {
                 {
                   text: 'OK',
                   onPress: async () => {
-                    //await dispatch(deleteService(serviceId));
+                    deleteService(serviceId, services);
                     navData.navigation.navigate('ServiceList');
                   }
                 },

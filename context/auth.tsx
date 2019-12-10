@@ -1,9 +1,10 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { clearLoginCredentialsFromDB, getLoginCredentialsFromDB } from '../db';
+import useAppState  from 'react-native-appstate-hook';
 
 export interface IAuth {
-  username: string | null;
-  password: string | null;
+  username: string;
+  password: string;
   missingCredentials: boolean;
   loading: boolean;
   authenticated: boolean;
@@ -33,8 +34,8 @@ export const getLoginCreditials = async () => {
 
 export const Auth = createContext<AuthProvider>({
   auth: {
-    username: null,
-    password: null,
+    username: '',
+    password: '',
     missingCredentials: false,
     loading: true,
     authenticated: false
@@ -44,12 +45,19 @@ export const Auth = createContext<AuthProvider>({
 
 const AuthProvider: React.FC = props => {
   const [auth, setAuth] = useState<IAuth>({
-    username: null,
-    password: null,
+    username: '',
+    password: '',
     missingCredentials: false,
     loading: true,
     authenticated: false
   });
+
+  useAppState({
+    onForeground: async () => {
+      setAuth({...auth, authenticated: false});
+    }
+  });
+
 
   useEffect(() => {
     getLoginCreditials().then(credentials => {
