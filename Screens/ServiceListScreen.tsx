@@ -2,14 +2,7 @@ import React, { useEffect, useContext } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import {
   NavigationStackScreenComponent,
-  NavigationStackProp,
-  NavigationStackOptions
 } from 'react-navigation-stack';
-import {
-  NavigationScreenConfigProps,
-  NavigationRoute,
-  NavigationParams
-} from 'react-navigation';
 import {
   HeaderButton,
   HeaderButtons,
@@ -21,10 +14,12 @@ import { Ionicons } from '@expo/vector-icons';
 import Service from '../Components/Service';
 import { clearLoginCredentialsFromDB } from '../db';
 
+//This is the main screen the user sees after login. It contains all their services (passwords, usernames, notes, etc.)
 const PasswordListScreen: NavigationStackScreenComponent = props => {
   const services = useContext(Services);
   const auth = useContext(Auth);
 
+  //
   const logoutHandler = async () => {
     await clearLoginCredentialsFromDB();
     if (auth && auth.setAuth) {
@@ -50,8 +45,8 @@ const PasswordListScreen: NavigationStackScreenComponent = props => {
       }
     );
     props.navigation.setParams({ logoutHandler });
-    console.log('Added Logout Handler');
   }, []);
+
   return (
     <FlatList
       style={styles.container}
