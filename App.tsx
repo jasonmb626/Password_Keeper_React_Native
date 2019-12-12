@@ -1,11 +1,13 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React from 'react';
 import AuthNavigator from './Navigation/AuthNavigator';
-import { initDB, seedData, getLoginCredentialsFromDB } from './db';
-import { AppLoading } from 'expo';
-import AuthProvider, { Auth, CurrentUser } from './context/auth';
+import { initDB, seedData } from './db';
+import AuthProvider from './context/auth';
 import ServicesProvider from './context/services';
 
+//Create database & initialize tables. (Leaves everything untouched if they already exist.)
 initDB();
+
+//Delete all entries and reinitialize from passwords.json if suspect database is corrupt.
 //seedData();
 
 export default function App() {

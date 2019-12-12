@@ -21,13 +21,6 @@ import { Ionicons } from '@expo/vector-icons';
 import Service from '../Components/Service';
 import { clearLoginCredentialsFromDB } from '../db';
 
-type NAVDATA = NavigationScreenConfigProps<
-  NavigationStackProp<NavigationRoute<NavigationParams>, NavigationParams>,
-  unknown
-> & {
-  navigationOptions: NavigationStackOptions;
-};
-
 const PasswordListScreen: NavigationStackScreenComponent = props => {
   const services = useContext(Services);
   const auth = useContext(Auth);

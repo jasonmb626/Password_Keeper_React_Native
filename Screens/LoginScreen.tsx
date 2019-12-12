@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { NavigationStackScreenComponent } from 'react-navigation-stack';
+import { NavigationStackScreenComponent, NavigationStackProp } from 'react-navigation-stack';
 import {
   TouchableHighlight,
   ScrollView,
@@ -21,15 +21,17 @@ import Constants from 'expo-constants';
 import * as LocalAuthentication from 'expo-local-authentication';
 import {setLoginCredentialsToDB} from '../db';
 
+
+//This is the first screen a user should see because they either need to be authenticated or reauthenticated (fingerprint).
 const LoginScreen: NavigationStackScreenComponent = props => {
   const auth = useContext(Auth);
   const [modalVisible, setModalVisible] = useState(false);
-  const [failedCount, setFailedCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [failedCount, setFailedCount] = useState(0); //Number of failed fingerprint scan attempts. It increments or resets, but otherwise is currently unused.
+  const [error, setError] = useState(); //With useEffect and Alert, used to alert user of error.
+  const [username, setUsername] = useState(''); //Linked to TextInput
+  const [password, setPassword] = useState(''); //Linked to TextInput
 
+  //If user chooses fingerprint login, resets everything so it'll work right.  
   const clearState = () => {
     if (auth && auth.setAuth) {
       auth.setAuth({ ...auth.auth, authenticated: false });
@@ -37,6 +39,7 @@ const LoginScreen: NavigationStackScreenComponent = props => {
     setFailedCount(0);
   };
 
+  //Is run when modal pops up. Attempts to authenticate using fingerprint.
   const scanFingerPrint = async () => {
     try {
       let results = await LocalAuthentication.authenticateAsync();
@@ -63,6 +66,7 @@ const LoginScreen: NavigationStackScreenComponent = props => {
     }
   }, [error]);
 
+  //Logs user in and redirects to main servicelist page.
   const authHandler = async () => {
     if (username === '') {
       Alert.alert('Please enter a username', error, [{ text: 'Okay' }]);
@@ -71,7 +75,6 @@ const LoginScreen: NavigationStackScreenComponent = props => {
     } else {
       if (auth && auth.setAuth) {
         const insertID = await  setLoginCredentialsToDB(username, password).catch(err => console.error(err));
-        console.log('inserted into database? ' + insertID)
         auth.setAuth({ ...auth.auth, username, password, authenticated: true, missingCredentials: false });
       }
       setUsername('');
@@ -107,15 +110,11 @@ const LoginScreen: NavigationStackScreenComponent = props => {
               value={password}
             />
             <View style={styles.buttonContainer}>
-              {isLoading ? (
-                <ActivityIndicator size="small" color={'#000000'} />
-              ) : (
                 <Button
                   title={'Login'}
                   color={'#000000'}
                   onPress={authHandler}
                 />
-              )}
             </View>
             {!auth.auth.missingCredentials && (
               <Button
