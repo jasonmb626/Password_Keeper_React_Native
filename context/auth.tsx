@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { clearLoginCredentialsFromDB, getLoginCredentialsFromDB } from '../db/db';
 import useAppState  from 'react-native-appstate-hook';
+import {Current_User} from '../db/Current_User';
 
 export interface IAuth {
   username: string;
@@ -10,11 +11,6 @@ export interface IAuth {
   authenticated: boolean;
 }
 
-export interface CurrentUser {
-  email: string;
-  password: string;
-}
-
 interface AuthProvider {
   auth: IAuth;
   setAuth: React.Dispatch<React.SetStateAction<IAuth>> | null;
@@ -22,7 +18,7 @@ interface AuthProvider {
 
 export const getLoginCreditials = async () => {
   try {
-    const credentials = (await getLoginCredentialsFromDB()) as CurrentUser;
+    const credentials = (await getLoginCredentialsFromDB()) as Current_User;
     return {
       username: credentials.email,
       password: credentials.password

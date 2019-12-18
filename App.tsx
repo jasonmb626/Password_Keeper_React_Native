@@ -1,11 +1,14 @@
 import React from 'react';
 import AuthNavigator from './Navigation/AuthNavigator';
-import { initDB, seedData } from './db/db';
 import AuthProvider from './context/auth';
 import ServicesProvider from './context/services';
+import * as SQLite from 'expo-sqlite';
+
+import { initDB, seedData } from './db/db';
+
 
 //Create database & initialize tables. (Leaves everything untouched if they already exist.)
-initDB();
+//initDB();
 
 //Delete all entries and reinitialize from passwords.json if suspect database is corrupt.
 //seedData();

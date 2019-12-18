@@ -1,11 +1,31 @@
 import * as SQLite from 'expo-sqlite';
+import "reflect-metadata";
 import servicesJSON from '../passwords.json';
 import CryptoJS from 'crypto-js';
 import { IService } from '../context/services';
-import { CurrentUser } from '../context/auth';
+import {Current_User} from './Current_User';
+import {Service} from './Service';
+import { ConnectionOptions, createConnection } from "typeorm/browser";
+
+const options: ConnectionOptions = {
+  type: "expo",
+  database: `password_keeper.db`,
+  entities: [ Current_User, Service ],
+  synchronize: true,
+  logging: true
+}
+
+export const getLoginCredentialsFromDB = async () => {
+  return createConnection(options).then(async connection => {
+    const Current_User_Repository = connection.getRepository(Current_User);
+    const current_user = Current_User_Repository.findOne();
+    connection.close();
+    return current_user;
+  });
+}
 
 //Opens database. Does it not need to be explicity closed?
-const db = SQLite.openDatabase('password_keeper.db');
+//const db = SQLite.openDatabase('password_keeper.db');
 
 //Create the tables if they don't exist. Note that if they do exist it doesn't delete or modify them, but it also resolves true/no error.
 export const initDB = async () => {
@@ -75,7 +95,7 @@ export const seedData = async () => {
       service.notes,
       newPassword
     ).toString();
-    return revisedService;
+    return revisedService as Service;
   });
   await deleteServicesFromDB();
   revisedServices.forEach(service => {
@@ -89,39 +109,12 @@ export const setLoginCredentialsToDB = async (
   password: string
 ) => {
   await clearLoginCredentialsFromDB();
-  return new Promise<number | SQLError>((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        `INSERT INTO current_user (email, password) VALUES (?, ?)`,
-        [username, password],
-        (_, result) => {
-          resolve(result.insertId);
-        },
-        (_, err) => {
-          reject(err);
-          return false;
-        }
-      );
-    });
-  });
-};
-
-//return login credentials (if they exist) from the database for fingerprint authentication to let bypass manual login.
-export const getLoginCredentialsFromDB = async () => {
-  return new Promise<CurrentUser | SQLError>((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        `SELECT * FROM current_user`,
-        [],
-        (_, result) => {
-          resolve(result.rows.item(0));
-        },
-        (_, err) => {
-          reject(err);
-          return false;
-        }
-      );
-    });
+  return createConnection(options).then(async connection => {
+    const Current_User_Repository = connection.getRepository(Current_User);
+    const user = await Current_User_Repository.create({email: username, password: password});
+    const saved = await user.save();
+    connection.close();
+    return saved;
   });
 };
 
@@ -129,58 +122,31 @@ export const getLoginCredentialsFromDB = async () => {
 //0 rows: no currently authenticated user OR 
 //1 row: currently authenticated user
 export const clearLoginCredentialsFromDB = () => {
-  return new Promise<SQLResultSetRowList | SQLError>((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        `DELETE FROM current_user`,
-        [],
-        (_, result) => {
-          resolve(result.rows);
-        },
-        (_, err) => {
-          reject(err);
-          return false;
-        }
-      );
-    });
+  return createConnection(options).then(async connection => {
+    const Current_User_Repository = connection.getRepository(Current_User);
+    const deleted = Current_User_Repository.delete({});
+    connection.close();
+    return deleted;
   });
 };
 
 //returns all services (service, password, username, notes etc) for specific user (usually currently logged in user)
 export const getServicesForUserFromDB = (user: string) => {
-  return new Promise<IService[] | SQLError>((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        `SELECT * FROM services WHERE user=?`,
-        [user],
-        (_, result) => {
-          resolve(result.rows._array);
-        },
-        (_, err) => {
-          reject(err);
-          return false;
-        }
-      );
-    });
+  return createConnection(options).then(async connection => {
+    const Service_Repository = connection.getRepository(Service);
+    const services = Service_Repository.find({user});
+    connection.close();
+    return services;
   });
 };
 
 //Returns all services from DB. This is for debugging.
 export const getServicesFromDB = () => {
-  return new Promise<IService[]>((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        `SELECT * FROM services`,
-        [],
-        (_, result) => {
-          resolve(result.rows._array);
-        },
-        (_, err) => {
-          reject(err);
-          return false;
-        }
-      );
-    });
+  return createConnection(options).then(async connection => {
+    const Service_Repository = connection.getRepository(Service);
+    const services = Service_Repository.find();
+    connection.close();
+    return services;
   });
 };
 
@@ -235,47 +201,22 @@ export const deleteServiceFromDB = (serviceId: string) => {
 
 //Delete all services from DB. Used with the SeedData function to reinitialize all entries from a JSON file. Used ocasionally in debugging only.
 export const deleteServicesFromDB = () => {
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        `DELETE FROM services`,
-        [],
-        (TX, result) => {
-          resolve(result);
-        },
-        (TX, err) => {
-          reject(err);
-          return false;
-        }
-      );
-    });
+  return createConnection(options).then(async connection => {
+    const Service_Repository = connection.getRepository(Service);
+    const deleted = Service_Repository.delete({});
+    connection.close();
+    return deleted;
   });
 };
 
 //Add a service to the DB.
-export const addServiceToDB = (serviceData: IService) => {
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        `INSERT INTO services (id, user, service, username, password, notes) 
-            VALUES (?, ?, ?, ?, ?, ?) `,
-        [
-          serviceData.id,
-          serviceData.user,
-          serviceData.service,
-          serviceData.username,
-          serviceData.password,
-          serviceData.notes
-        ],
-        (TX, result) => {
-          resolve(result);
-        },
-        (TX, err) => {
-          reject(err);
-          return false;
-        }
-      );
-    });
+export const addServiceToDB = (serviceData: Service) => {
+  return createConnection(options).then(async connection => {
+    const Service_Repository = connection.getRepository(Service);
+    const newService = Service_Repository.create(serviceData);
+    const saved = newService.save();
+    connection.close();
+    return saved;
   });
 };
 
