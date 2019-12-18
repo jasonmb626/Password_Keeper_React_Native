@@ -12,7 +12,7 @@ import { Auth } from '../context/auth';
 import { Services, getServices, IService } from '../context/services';
 import { Ionicons } from '@expo/vector-icons';
 import Service from '../Components/Service';
-import { clearLoginCredentialsFromDB } from '../db';
+import { clearLoginCredentialsFromDB } from '../db/db';
 
 //This is the main screen the user sees after login. It contains all their services (passwords, usernames, notes, etc.)
 const PasswordListScreen: NavigationStackScreenComponent = props => {

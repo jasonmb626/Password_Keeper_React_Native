@@ -19,7 +19,7 @@ import { Auth } from '../context/auth';
 import Card from '../Components/Card';
 import Constants from 'expo-constants';
 import * as LocalAuthentication from 'expo-local-authentication';
-import {setLoginCredentialsToDB} from '../db';
+import {setLoginCredentialsToDB} from '../db/db';
 
 
 //This is the first screen a user should see because they either need to be authenticated or reauthenticated (fingerprint).

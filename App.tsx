@@ -1,6 +1,6 @@
 import React from 'react';
 import AuthNavigator from './Navigation/AuthNavigator';
-import { initDB, seedData } from './db';
+import { initDB, seedData } from './db/db';
 import AuthProvider from './context/auth';
 import ServicesProvider from './context/services';
 

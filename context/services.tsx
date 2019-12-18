@@ -5,7 +5,7 @@ import {
   addServiceToDB,
   reenctryptWithNewPasswordToDB,
   deleteServiceFromDB
-} from '../db';
+} from '../db/db';
 import CryptoJS from 'crypto-js';
 
 import uuid from 'uuid';
@@ -73,7 +73,7 @@ export const getServices = async (
       if (error) return cipherData;
     }
   } else {
-    if (Array.isArray) decrypted = cipherData as IService[];
+    decrypted = cipherData as IService[];
   }
   return decrypted;
 };

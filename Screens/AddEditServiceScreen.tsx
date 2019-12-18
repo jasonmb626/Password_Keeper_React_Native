@@ -18,7 +18,7 @@ import { View, TextInput, Text, StyleSheet, Button, Alert } from 'react-native';
 import { Services, IService, addUpdateService, deleteService } from '../context/services';
 import { Auth } from '../context/auth';
 import { Ionicons } from '@expo/vector-icons';
-import { clearLoginCredentialsFromDB } from '../db';
+import { clearLoginCredentialsFromDB } from '../db/db';
 
 type NAVDATA = NavigationScreenConfigProps<
   NavigationStackProp<NavigationRoute<NavigationParams>, NavigationParams>,

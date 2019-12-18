@@ -1,8 +1,8 @@
 import * as SQLite from 'expo-sqlite';
-import servicesJSON from './passwords.json';
+import servicesJSON from '../passwords.json';
 import CryptoJS from 'crypto-js';
-import { IService } from './context/services';
-import { CurrentUser } from './context/auth';
+import { IService } from '../context/services';
+import { CurrentUser } from '../context/auth';
 
 //Opens database. Does it not need to be explicity closed?
 const db = SQLite.openDatabase('password_keeper.db');

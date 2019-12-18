@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { clearLoginCredentialsFromDB, getLoginCredentialsFromDB } from '../db';
+import { clearLoginCredentialsFromDB, getLoginCredentialsFromDB } from '../db/db';
 import useAppState  from 'react-native-appstate-hook';
 
 export interface IAuth {
