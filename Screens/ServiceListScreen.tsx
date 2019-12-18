@@ -9,10 +9,11 @@ import {
   Item
 } from 'react-navigation-header-buttons';
 import { Auth } from '../context/auth';
-import { Services, getServices, IService } from '../context/services';
+import { Services, getServices } from '../context/services';
 import { Ionicons } from '@expo/vector-icons';
 import Service from '../Components/Service';
 import { clearLoginCredentialsFromDB } from '../db/db';
+import { ServiceModel } from '../db/Service';
 
 //This is the main screen the user sees after login. It contains all their services (passwords, usernames, notes, etc.)
 const PasswordListScreen: NavigationStackScreenComponent = props => {
@@ -41,7 +42,7 @@ const PasswordListScreen: NavigationStackScreenComponent = props => {
     getServices(auth.auth.username, auth.auth.password).then(
       fetchedServices => {
         if (services && services.setServices)
-          services.setServices(fetchedServices as IService[]);
+          services.setServices(fetchedServices as ServiceModel[]);
       }
     );
     props.navigation.setParams({ logoutHandler });

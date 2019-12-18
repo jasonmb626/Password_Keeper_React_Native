@@ -7,21 +7,13 @@ import {
   deleteServiceFromDB
 } from '../db/db';
 import CryptoJS from 'crypto-js';
+import {ServiceModel} from '../db/Service';
 
 import uuid from 'uuid';
 
-export interface IService {
-  id: string;
-  user?: string;
-  service: string;
-  username: string;
-  password: string;
-  notes: string;
-}
-
 export interface ServiceProvider {
-  services: IService[] | null;
-  setServices: React.Dispatch<React.SetStateAction<IService[]>> | null;
+  services: ServiceModel[] | null;
+  setServices: React.Dispatch<React.SetStateAction<ServiceModel[]>> | null;
 }
 
 export const Services = createContext<ServiceProvider>({
@@ -30,7 +22,7 @@ export const Services = createContext<ServiceProvider>({
 });
 
 const ServiceProvider: React.FC = props => {
-  const [services, setServices] = useState<IService[]>([]);
+  const [services, setServices] = useState<ServiceModel[]>([]);
 
   return (
     <Services.Provider value={{ services, setServices }}>
@@ -48,12 +40,12 @@ export const getServices = async (
   }
 
   const cipherData = await getServicesForUserFromDB(username);
-  let decrypted: IService[] = [];
+  let decrypted: ServiceModel[] = [];
   let error = false;
   if (password !== '') {
     if (Array.isArray(cipherData)) {
       decrypted = cipherData.map(entry => {
-        let decrypt = { ...entry };
+        let decrypt = { ...entry } as ServiceModel;
         let bytes;
         try {
           bytes = CryptoJS.AES.decrypt(entry.service, password);
@@ -73,16 +65,16 @@ export const getServices = async (
       if (error) return cipherData;
     }
   } else {
-    decrypted = cipherData as IService[];
+    decrypted = cipherData as ServiceModel[];
   }
   return decrypted;
 };
 
-export const changePassword = (services: IService[], newPassword: string) => {
+export const changePassword = (services: ServiceModel[], newPassword: string) => {
   console.log('change password');
   console.log(services);
   services.forEach(async service => {
-    const revisedService = { ...service };
+    const revisedService = { ...service } as ServiceModel;
     if (newPassword) {
       revisedService.service = CryptoJS.AES.encrypt(
         service.service,
@@ -111,7 +103,7 @@ export const changePassword = (services: IService[], newPassword: string) => {
 };
 
 export const addUpdateService = async (
-  serviceData: IService,
+  serviceData: ServiceModel,
   password: string,
   services: ServiceProvider
 ) => {
@@ -121,7 +113,7 @@ export const addUpdateService = async (
     serviceData.id = uuid();
     isNewEntry = true;
   }
-  const revisedService = { ...serviceData };
+  const revisedService = { ...serviceData } as ServiceModel;
   revisedService.service = CryptoJS.AES.encrypt(
     serviceData.service,
     password
@@ -144,7 +136,7 @@ export const addUpdateService = async (
       if (services && services.services && services.setServices) {
         const revisedServices = services.services.map(service => {
           if (service.id === serviceData.id) return serviceData;
-          else return { ...service };
+          else return { ...service } as ServiceModel;
         });
         services.setServices(revisedServices);
       }

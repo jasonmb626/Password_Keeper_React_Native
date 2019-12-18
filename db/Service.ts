@@ -1,7 +1,7 @@
 import {Entity, Column, BaseEntity, PrimaryColumn} from "typeorm";
 
 @Entity()
-export class Service extends BaseEntity {
+export class ServiceModel extends BaseEntity {
     @PrimaryColumn("text")
     id!: string;
     

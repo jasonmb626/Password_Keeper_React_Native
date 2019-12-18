@@ -1,7 +1,7 @@
 import {Entity, PrimaryColumn, Column, BaseEntity} from "typeorm";
 
 @Entity()
-export class Current_User extends BaseEntity {
+export class Current_User_Model extends BaseEntity {
 
     @PrimaryColumn("text")
     email!: string;

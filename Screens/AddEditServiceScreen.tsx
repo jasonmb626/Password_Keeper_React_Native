@@ -15,10 +15,11 @@ import {
   Item
 } from 'react-navigation-header-buttons';
 import { View, TextInput, Text, StyleSheet, Button, Alert } from 'react-native';
-import { Services, IService, addUpdateService, deleteService } from '../context/services';
+import { Services, addUpdateService, deleteService } from '../context/services';
 import { Auth } from '../context/auth';
 import { Ionicons } from '@expo/vector-icons';
 import { clearLoginCredentialsFromDB } from '../db/db';
+import {ServiceModel} from '../db/Service';
 
 type NAVDATA = NavigationScreenConfigProps<
   NavigationStackProp<NavigationRoute<NavigationParams>, NavigationParams>,
@@ -29,23 +30,17 @@ type NAVDATA = NavigationScreenConfigProps<
 
 const AddEditServiceScreen: NavigationStackScreenComponent = props => {
   const [loaded, setLoaded] = useState(false);
-  const [serviceData, setServiceData] = useState<IService>({
-    id: '',
-    service: '',
-    username: '',
-    password: '',
-    notes: ''
-  });
+  const blankService = new ServiceModel();
+  blankService.id = '',
+  blankService.service = '',
+  blankService.username = '',
+  blankService.password = '',
+  blankService.notes = ''
+  const [serviceData, setServiceData] = useState<ServiceModel>(blankService);
   const auth = useContext(Auth);
   const serviceId = props.navigation.getParam('id');
   const services = useContext(Services);
-  let service: IService = {
-    id: '',
-    service: '',
-    username: '',
-    password: '',
-    notes: ''
-  };
+  let service = {...blankService} as ServiceModel;
 
   const logoutHandler = async (navData: NAVDATA) => {
     await clearLoginCredentialsFromDB();
@@ -68,17 +63,11 @@ const AddEditServiceScreen: NavigationStackScreenComponent = props => {
     if (serviceId && services && services.services) {
       service = services.services.find(
         service => service.id === serviceId
-      ) as IService;
+      ) as ServiceModel;
       setServiceData(service);
       setLoaded(true);
     } else {
-      service = {
-        id: '',
-        service: '',
-        username: '',
-        password: '',
-        notes: ''
-      };
+      service = {...blankService} as ServiceModel;
       setLoaded(true);
     }
     props.navigation.setParams({ logoutHandler });
@@ -91,7 +80,7 @@ const AddEditServiceScreen: NavigationStackScreenComponent = props => {
   }
 
   const onChange = (inputField: string, text: string) => {
-    setServiceData({ ...serviceData, [inputField]: text });
+    setServiceData({ ...serviceData, [inputField]: text } as ServiceModel);
   };
 
   return (
@@ -124,7 +113,7 @@ const AddEditServiceScreen: NavigationStackScreenComponent = props => {
         <Button
           title="Save"
           onPress={() => {
-            const serviceWithUser = { ...serviceData };
+            const serviceWithUser = { ...serviceData } as ServiceModel;
             if (auth && auth.auth && auth.auth.username && auth.auth.password) {
               serviceWithUser.user = auth.auth.username;
               addUpdateService(serviceWithUser, auth.auth.password, services);
