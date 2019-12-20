@@ -105,7 +105,8 @@ export const changePassword = (services: ServiceModel[], newPassword: string) =>
 export const addUpdateService = async (
   serviceData: ServiceModel,
   password: string,
-  services: ServiceProvider
+  services: ServiceProvider,
+  userId: string
 ) => {
   let isNewEntry = false;
 
@@ -146,7 +147,7 @@ export const addUpdateService = async (
     }
   } else {
     try {
-      await addServiceToDB(revisedService);
+      await addServiceToDB(revisedService, userId);
       if (services && services.services && services.setServices) {
         services.setServices([...services.services, serviceData]);
       }

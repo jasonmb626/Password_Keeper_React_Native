@@ -1,9 +1,12 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { clearLoginCredentialsFromDB, getLoginCredentialsFromDB } from '../db/db';
+import { logoutAllUsersFromDB, getLoggedInUserFromDB, registerUserToDB, dbSecret, establishDBConnection, seedData, printDB, db } from '../db/db';
 import useAppState  from 'react-native-appstate-hook';
-import {Current_User_Model} from '../db/Current_User';
+import {UserModel} from '../db/User';
+import CryptoJS from 'crypto-js';
+import { Connection } from 'typeorm';
 
 export interface IAuth {
+  id?: string;
   username: string;
   password: string;
   missingCredentials: boolean;
@@ -18,15 +21,22 @@ interface AuthProvider {
 
 export const getLoginCreditials = async () => {
   try {
-    const credentials = (await getLoginCredentialsFromDB()) as Current_User_Model;
-    return {
-      username: credentials.email,
-      password: credentials.password
-    };
+    const credentials = (await getLoggedInUserFromDB()) as UserModel;
+    const bytes = CryptoJS.AES.decrypt(credentials.password, dbSecret);
+    credentials.password = bytes.toString(CryptoJS.enc.Utf8);
+    return credentials;
   } catch (err) {
     return null;
   }
 };
+
+export const registerUser = async (newUser : UserModel) => {
+  newUser.password = CryptoJS.AES.encrypt(
+    newUser.password,
+    dbSecret
+  ).toString();
+  return registerUserToDB(newUser);
+}
 
 export const Auth = createContext<AuthProvider>({
   auth: {
@@ -41,9 +51,10 @@ export const Auth = createContext<AuthProvider>({
 
 const AuthProvider: React.FC = props => {
   const [auth, setAuth] = useState<IAuth>({
+    id: '',
     username: '',
     password: '',
-    missingCredentials: false,
+    missingCredentials: true,
     loading: true,
     authenticated: false
   });
@@ -54,16 +65,34 @@ const AuthProvider: React.FC = props => {
     }
   });
 
-
   useEffect(() => {
+    establishDBConnection().then(async () => {
+      //Delete all entries and reinitialize from passwords.json if suspect database is corrupt.
+      console.log('Seeding data');
+      try {
+       //await seedData();
+       printDB();
+      } catch (err) {
+        console.error(err);
+      }
+    });
     getLoginCreditials().then(credentials => {
       if (credentials) {
-        setAuth({...auth, username: credentials.username, password: credentials.password});
+        console.log(credentials);
+        setAuth({...auth, id: credentials.id, username: credentials.email, password: credentials.password, missingCredentials: false});
+        setTimeout(() => {
+          console.log('auth:');
+          console.log(auth);
+        }, 5000);
       } else {
         setAuth({...auth, missingCredentials: true})
       }
     });
-
+    //Close database connection if application loses focus or closes
+    return (() => {
+      if (db.Connection)
+        db.Connection.close();
+    });
   }, []);
 
   return (
@@ -72,7 +101,7 @@ const AuthProvider: React.FC = props => {
 };
 
 export const logout = async () => {
-  await clearLoginCredentialsFromDB();
+  await logoutAllUsersFromDB();
 };
 
 export default AuthProvider;

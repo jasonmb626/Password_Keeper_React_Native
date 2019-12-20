@@ -1,13 +1,11 @@
 import * as SQLite from 'expo-sqlite';
 import React from 'react';
+import {YellowBox} from 'react-native';
 import AuthNavigator from './Navigation/AuthNavigator';
 import AuthProvider from './context/auth';
 import ServicesProvider from './context/services';
 
-import { seedData } from './db/db';
-
-//Delete all entries and reinitialize from passwords.json if suspect database is corrupt.
-//seedData();
+YellowBox.ignoreWarnings(['Require cycle:']);
 
 //Tell typescript that window has an Expo property. Could not determine its exact type so just went with any.
 declare global {
